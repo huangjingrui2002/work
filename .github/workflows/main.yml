@@ -18,7 +18,7 @@ jobs:
           docker save filebrowser/filebrowser:latest -o filebrowser.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # ✅ 改成 v4
         with:
           name: filebrowser-tar
           path: filebrowser.tar
