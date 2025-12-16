@@ -1,0 +1,24 @@
+name: Build FileBrowser Tar
+on:
+  workflow_dispatch: # 手动触发构建
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Pull FileBrowser image
+        run: |
+          docker pull filebrowser/filebrowser:latest
+
+      - name: Save as tar
+        run: |
+          docker save filebrowser/filebrowser:latest -o filebrowser.tar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: filebrowser-tar
+          path: filebrowser.tar
