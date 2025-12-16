@@ -1,12 +1,13 @@
 name: Build FileBrowser ARM64 Tar
+
 on:
-  workflow_dispatch: # 手动触发构建
+  workflow_dispatch:  # 手动触发构建
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up QEMU for multi-arch support
@@ -14,15 +15,16 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Pull FileBrowser ARM64 image
+      - name: Pull FileBrowser ARM64 image with explicit tag
         run: |
           docker pull --platform linux/arm64 filebrowser/filebrowser:latest
+          docker tag filebrowser/filebrowser:latest filebrowser/filebrowser:arm64
 
-      - name: Save as tar
+      - name: Save ARM64 image as tar
         run: |
-          docker save filebrowser/filebrowser:latest -o filebrowser-arm64.tar
+          docker save filebrowser/filebrowser:arm64 -o filebrowser-arm64.tar
 
-      - name: Upload artifact
+      - name: Upload ARM64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: filebrowser-arm64-tar
