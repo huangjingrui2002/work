@@ -1,7 +1,7 @@
 name: Build JRE17-Alpine ARM64 Tar
 
 on:
-  workflow_dispatch:  # 手动触发构建
+  workflow_dispatch:
 
 jobs:
   build:
@@ -10,16 +10,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up QEMU for multi-arch support
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Pull Eclipse Temurin JRE 17 Alpine (ARM64)
+      - name: Pull Eclipse Temurin JRE 17 Alpine for ARM64
         run: |
-          # 显式指定平台为 linux/arm64，并拉取官方镜像
+          # 使用 buildx 创建一个 builder 实例后，docker pull 支持 --platform
           docker pull --platform linux/arm64 eclipse-temurin:17-jre-alpine
-          # 可选：打一个便于识别的标签
           docker tag eclipse-temurin:17-jre-alpine jre:17-jre-alpine-arm64
 
       - name: Save ARM64 image as tar
