@@ -1,4 +1,4 @@
-name: Build JRE17-Alpine ARM64 Tar
+name: Build JRE17 ARM64 Tar
 
 on:
   workflow_dispatch:
@@ -13,18 +13,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Pull Eclipse Temurin JRE 17 Alpine for ARM64
+      - name: Pull JRE 17 (ARM64-compatible, Debian-based)
         run: |
-          # 使用 buildx 创建一个 builder 实例后，docker pull 支持 --platform
-          docker pull --platform linux/arm64 eclipse-temurin:17-jre-alpine
-          docker tag eclipse-temurin:17-jre-alpine jre:17-jre-alpine-arm64
+          docker pull --platform linux/arm64 eclipse-temurin:17-jre
+          docker tag eclipse-temurin:17-jre jre:17-jre-arm64
 
-      - name: Save ARM64 image as tar
+      - name: Save image as tar
         run: |
-          docker save jre:17-jre-alpine-arm64 -o jre17-alpine-arm64.tar
+          docker save jre:17-jre-arm64 -o jre17-arm64.tar
 
-      - name: Upload ARM64 artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jre17-alpine-arm64-tar
-          path: jre17-alpine-arm64.tar
+          name: jre17-arm64-tar
+          path: jre17-arm64.tar
