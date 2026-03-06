@@ -1,4 +1,4 @@
-name: Download FileBrowser v2.61.1 Tar
+name: Download FileBrowser v2.61.1 (ARM64) Tar
 
 on:
   workflow_dispatch:  # 允许手动触发
@@ -10,16 +10,21 @@ jobs:
       - name: Checkout repository (optional)
         uses: actions/checkout@v3
 
-      - name: Pull FileBrowser v2.61.1 image
+      - name: Set up QEMU for multi-arch support
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Pull FileBrowser v2.61.1 for ARM64
         run: |
-          docker pull filebrowser/filebrowser:v2.61.1
+          docker pull --platform linux/arm64 filebrowser/filebrowser:v2.61.1
 
       - name: Save image as tar
         run: |
-          docker save filebrowser/filebrowser:v2.61.1 -o filebrowser-v2.61.1.tar
+          docker save filebrowser/filebrowser:v2.61.1 -o filebrowser-v2.61.1-arm64.tar
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: filebrowser-v2.61.1-tar
-          path: filebrowser-v2.61.1.tar
+          name: filebrowser-v2.61.1-arm64-tar
+          path: filebrowser-v2.61.1-arm64.tar
