@@ -1,7 +1,7 @@
-name: Download Nacos v3.1.1 Tar
+name: Download FileBrowser v2.61.1 Tar
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   download:
@@ -10,16 +10,16 @@ jobs:
       - name: Checkout repository (optional)
         uses: actions/checkout@v3
 
-      - name: Pull Nacos Server v3.1.1
+      - name: Pull FileBrowser v2.61.1 image
         run: |
-          docker pull nacos/nacos-server:v3.1.1
+          docker pull filebrowser/filebrowser:v2.61.1
 
       - name: Save image as tar
         run: |
-          docker save nacos/nacos-server:v3.1.1 -o nacos-v3.1.1.tar
+          docker save filebrowser/filebrowser:v2.61.1 -o filebrowser-v2.61.1.tar
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nacos-v3.1.1-tar
-          path: nacos-v3.1.1.tar
+          name: filebrowser-v2.61.1-tar
+          path: filebrowser-v2.61.1.tar
