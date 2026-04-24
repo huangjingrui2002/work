@@ -1,30 +1,30 @@
-name: Download FileBrowser v2.61.1 (ARM64) Tar
+name: Download JDK 8 Image (ARM64)
 
 on:
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch: # 允许手动触发
 
 jobs:
-  download:
+  download-jdk8:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository (optional)
-        uses: actions/checkout@v3
-
-      - name: Set up QEMU for multi-arch support
+      - name: Set up QEMU (为了支持 ARM64 架构)
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
-      - name: Pull FileBrowser v2.61.1 for ARM64
+      - name: Pull Official JDK 8 Image (ARM64)
+        # 直接使用官方维护的 Eclipse Temurin 镜像，这是目前最推荐的 OpenJDK 镜像
         run: |
-          docker pull --platform linux/arm64 filebrowser/filebrowser:v2.61.1
+          docker pull --platform linux/arm64 eclipse-temurin:8-jdk
 
-      - name: Save image as tar
+      - name: Save Image as Tar
+        # 把镜像保存为 tar 包
         run: |
-          docker save filebrowser/filebrowser:v2.61.1 -o filebrowser-v2.61.1-arm64.tar
+          docker save eclipse-temurin:8-jdk -o jdk8-arm64.tar
 
-      - name: Upload artifact
+      - name: Upload Artifact
+        # 上传文件供你下载
         uses: actions/upload-artifact@v4
         with:
-          name: filebrowser-v2.61.1-arm64-tar
-          path: filebrowser-v2.61.1-arm64.tar
+          name: jdk8-arm64-tar
+          path: jdk8-arm64.tar
