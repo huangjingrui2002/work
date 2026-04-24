@@ -1,4 +1,4 @@
-name: Download JDK 8 Image (ARM64)
+name: Download JDK 8 Image (x86_64)
 
 on:
   workflow_dispatch: # 允许手动触发
@@ -7,24 +7,20 @@ jobs:
   download-jdk8:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up QEMU (为了支持 ARM64 架构)
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
-      - name: Pull Official JDK 8 Image (ARM64)
-        # 直接使用官方维护的 Eclipse Temurin 镜像，这是目前最推荐的 OpenJDK 镜像
+      - name: Pull Official JDK 8 Image (x86_64)
+        # 拉取标准的 x86_64 版本 JDK 8
+        # 这里使用的是 Eclipse Temurin，目前最主流的 OpenJDK 发行版
         run: |
-          docker pull --platform linux/arm64 eclipse-temurin:8-jdk
+          docker pull eclipse-temurin:8-jdk
 
       - name: Save Image as Tar
-        # 把镜像保存为 tar 包
+        # 将镜像保存为 tar 包
         run: |
-          docker save eclipse-temurin:8-jdk -o jdk8-arm64.tar
+          docker save eclipse-temurin:8-jdk -o jdk8-x86.tar
 
       - name: Upload Artifact
         # 上传文件供你下载
         uses: actions/upload-artifact@v4
         with:
-          name: jdk8-arm64-tar
-          path: jdk8-arm64.tar
+          name: jdk8-x86-tar
+          path: jdk8-x86.tar
