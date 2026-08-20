@@ -1,4 +1,4 @@
-name: Download PostgreSQL 15.16 Image
+name: Download PostgreSQL 17.11 Image
 
 on:
   workflow_dispatch: # 允许手动触发
@@ -7,20 +7,19 @@ jobs:
   download-postgres:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull Official PostgreSQL 15.16 Image
-        # 拉取官方的 PostgreSQL 15.16 Alpine 版本镜像
-        # 如果你需要标准版（体积较大），可以将标签改为 postgres:15.16
+      - name: Pull Official PostgreSQL 17.11 Image (x86_64)
+        # 显式指定 linux/amd64 平台，确保拉取的是 x86 版本
         run: |
-          docker pull postgres:15.16-alpine
+          docker pull --platform linux/amd64 postgres:17.11
 
       - name: Save Image as Tar
         # 将镜像保存为 tar 包
         run: |
-          docker save postgres:15.16-alpine -o postgres-15.16.tar
+          docker save postgres:17.11 -o postgres-17.11-amd64.tar
 
       - name: Upload Artifact
         # 上传 tar 包文件供你下载
         uses: actions/upload-artifact@v4
         with:
-          name: postgres-15-16-tar
-          path: postgres-15.16.tar
+          name: postgres-17-11-amd64-tar
+          path: postgres-17.11-amd64.tar
