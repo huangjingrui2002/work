@@ -1,22 +1,23 @@
-name: Download Redis 7.4.11 AMD64
+name: Download Redis 7.4.11 ARM64
 
 on:
   workflow_dispatch:
 
 jobs:
-  download-redis-amd64:
+  download-redis-arm64:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull Redis 7.4.11 (linux/amd64)
+      - name: Pull Redis 7.4.11 (linux/arm64)
         run: |
-          docker pull --platform linux/amd64 redis:7.4.11
+          docker pull --platform linux/arm64 redis:7.4.11
 
       - name: Save Image as Tar
         run: |
-          docker save redis:7.4.11 -o redis-7.4.11-amd64.tar
+          # 显式使用带平台后缀的镜像名保存，确保保存的是 arm64 版本
+          docker save redis:7.4.11 -o redis-7.4.11-arm64.tar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: redis-7.4.11-amd64-tar
-          path: redis-7.4.11-amd64.tar
+          name: redis-7.4.11-arm64-tar
+          path: redis-7.4.11-arm64.tar
