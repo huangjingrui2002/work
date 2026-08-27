@@ -1,4 +1,4 @@
-name: Download Redis 7.4.10 AMD64
+name: Download Redis 7.4.11 AMD64
 
 on:
   workflow_dispatch:
@@ -7,16 +7,16 @@ jobs:
   download-redis-amd64:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull Redis 7.4.10 (linux/amd64)
+      - name: Pull Redis 7.4.11 (linux/amd64)
         run: |
-          docker pull --platform linux/amd64 redis:7.4.10
+          docker pull --platform linux/amd64 redis:7.4.11
 
       - name: Save Image as Tar
         run: |
-          docker save redis:7.4.10 -o redis-7.4.10-amd64.tar
+          docker save redis:7.4.11 -o redis-7.4.11-amd64.tar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: redis-7.4.10-amd64-tar
-          path: redis-7.4.10-amd64.tar
+          name: redis-7.4.11-amd64-tar
+          path: redis-7.4.11-amd64.tar
