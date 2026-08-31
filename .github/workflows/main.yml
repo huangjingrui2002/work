@@ -1,23 +1,23 @@
-name: Download Redis 7.4.11 ARM64
+name: Download Nacos 3.2.4 AMD64 (for x86)
 
 on:
   workflow_dispatch:
 
 jobs:
-  download-redis-arm64:
+  download-nacos-amd64:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull Redis 7.4.11 (linux/arm64)
+      - name: Pull Nacos 3.2.4 (linux/amd64)
         run: |
-          docker pull --platform linux/arm64 redis:7.4.11
+          # 👇 改为 amd64，这才是 x86 需要的
+          docker pull --platform linux/amd64 nacos/nacos-server:3.2.4
 
       - name: Save Image as Tar
         run: |
-          # 显式使用带平台后缀的镜像名保存，确保保存的是 arm64 版本
-          docker save redis:7.4.11 -o redis-7.4.11-arm64.tar
+          docker save nacos/nacos-server:3.2.4 -o nacos-3.2.4-amd64.tar
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: redis-7.4.11-arm64-tar
-          path: redis-7.4.11-arm64.tar
+          name: nacos-3.2.4-amd64-tar
+          path: nacos-3.2.4-amd64.tar
