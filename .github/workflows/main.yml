@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       nacos_version:
-        description: 'Nacos version tag'
+        description: 'Nacos version tag (e.g., v3.2.4)'
         required: true
-        default: '3.2.4'
+        default: 'v3.2.4'   
 
 jobs:
   download-nacos-amd64:
@@ -18,8 +18,10 @@ jobs:
       - name: Pull Nacos (linux/amd64)
         run: |
           VERSION=${{ github.event.inputs.nacos_version }}
+          echo "Pulling nacos/nacos-server:${VERSION} ..."
           docker pull --platform linux/amd64 nacos/nacos-server:${VERSION}
-          # ✅ 校验架构是否正确
+
+          # ✅ 校验架构
           ARCH=$(docker inspect --format='{{.Architecture}}' nacos/nacos-server:${VERSION})
           echo "Pulled architecture: ${ARCH}"
           if [ "${ARCH}" != "amd64" ]; then
