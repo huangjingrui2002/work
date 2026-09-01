@@ -33,28 +33,26 @@ jobs:
           VERSION=${{ github.event.inputs.nacos_version }}
           IMAGE="nacos/nacos-server:${VERSION}"
           
-          # ✅ 一行命令瘦身：删除文档、示例、源码包等无用文件
-          docker run --rm "${IMAGE}" sh -c "
-            rm -rf /home/nacos/conf/*.example \
+          # ✅ 关键修复：注入 NACOS_AUTH_TOKEN 绕过 v3.x 启动校验
+          # 使用 /bin/sh -c 确保命令正确执行，而非触发 entrypoint
+          CONTAINER_ID=$(docker create \
+            -e NACOS_AUTH_TOKEN=U2VjcmV0S2V5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI= \
+            --entrypoint /bin/sh \
+            "${IMAGE}" \
+            -c "rm -rf /home/nacos/conf/*.example \
                    /home/nacos/plugins/custom \
                    /home/nacos/logs/* \
                    /home/nacos/target/nacos-server.jar.original \
                    /home/nacos/bin/*.cmd \
-                   /home/nacos/NOTICE /home/nacos/LICENSE /home/nacos/README.md
-          "
+                   /home/nacos/NOTICE /home/nacos/LICENSE /home/nacos/README.md")
           
-          # 将清理后的容器提交为新镜像
-          CONTAINER_ID=$(docker create "${IMAGE}" sh -c "
-            rm -rf /home/nacos/conf/*.example \
-                   /home/nacos/plugins/custom \
-                   /home/nacos/logs/* \
-                   /home/nacos/target/nacos-server.jar.original \
-                   /home/nacos/bin/*.cmd \
-                   /home/nacos/NOTICE /home/nacos/LICENSE /home/nacos/README.md
-          ")
-          docker start "${CONTAINER_ID}" || true
+          docker start "${CONTAINER_ID}"
+          docker wait "${CONTAINER_ID}" || true
           docker commit "${CONTAINER_ID}" nacos-slim:${VERSION}-amd64
           docker rm "${CONTAINER_ID}"
+          
+          echo "Slim image created: nacos-slim:${VERSION}-amd64"
+          docker images nacos-slim:${VERSION}-amd64
 
       - name: Save & Compress Slim Image
         run: |
