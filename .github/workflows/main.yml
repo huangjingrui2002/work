@@ -15,28 +15,51 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Pull Official Slim Nacos (linux/amd64)
+      - name: Pull Official Nacos (linux/amd64)
         run: |
           VERSION=${{ github.event.inputs.nacos_version }}
-          # ✅ 使用阿里云ACR上的官方Alpine精简版
-          SLIM_IMAGE="registry.cn-hangzhou.aliyuncs.com/nacos/nacos-server:${VERSION}-alpine"
-          
-          echo "Pulling official slim image: ${SLIM_IMAGE} ..."
-          docker pull --platform linux/amd64 "${SLIM_IMAGE}"
+          echo "Pulling nacos/nacos-server:${VERSION} ..."
+          docker pull --platform linux/amd64 nacos/nacos-server:${VERSION}
 
-          # ✅ 校验架构
-          ARCH=$(docker inspect --format='{{.Architecture}}' "${SLIM_IMAGE}")
+          ARCH=$(docker inspect --format='{{.Architecture}}' nacos/nacos-server:${VERSION})
           echo "Pulled architecture: ${ARCH}"
           if [ "${ARCH}" != "amd64" ]; then
             echo "::error::Expected amd64 but got ${ARCH}"
             exit 1
           fi
 
-      - name: Save & Compress Image
+      - name: Slim Image Locally
         run: |
           VERSION=${{ github.event.inputs.nacos_version }}
-          SLIM_IMAGE="registry.cn-hangzhou.aliyuncs.com/nacos/nacos-server:${VERSION}-alpine"
-          docker save "${SLIM_IMAGE}" | gzip > nacos-${VERSION}-slim-amd64.tar.gz
+          IMAGE="nacos/nacos-server:${VERSION}"
+          
+          # ✅ 一行命令瘦身：删除文档、示例、源码包等无用文件
+          docker run --rm "${IMAGE}" sh -c "
+            rm -rf /home/nacos/conf/*.example \
+                   /home/nacos/plugins/custom \
+                   /home/nacos/logs/* \
+                   /home/nacos/target/nacos-server.jar.original \
+                   /home/nacos/bin/*.cmd \
+                   /home/nacos/NOTICE /home/nacos/LICENSE /home/nacos/README.md
+          "
+          
+          # 将清理后的容器提交为新镜像
+          CONTAINER_ID=$(docker create "${IMAGE}" sh -c "
+            rm -rf /home/nacos/conf/*.example \
+                   /home/nacos/plugins/custom \
+                   /home/nacos/logs/* \
+                   /home/nacos/target/nacos-server.jar.original \
+                   /home/nacos/bin/*.cmd \
+                   /home/nacos/NOTICE /home/nacos/LICENSE /home/nacos/README.md
+          ")
+          docker start "${CONTAINER_ID}" || true
+          docker commit "${CONTAINER_ID}" nacos-slim:${VERSION}-amd64
+          docker rm "${CONTAINER_ID}"
+
+      - name: Save & Compress Slim Image
+        run: |
+          VERSION=${{ github.event.inputs.nacos_version }}
+          docker save nacos-slim:${VERSION}-amd64 | gzip > nacos-${VERSION}-slim-amd64.tar.gz
           ls -lh nacos-${VERSION}-slim-amd64.tar.gz
 
       - name: Upload Artifact
