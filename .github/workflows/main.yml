@@ -1,68 +1,26 @@
-name: Download Nacos AMD64 Slim Image
+#!/bin/bash
 
-on:
-  workflow_dispatch:
-    inputs:
-      nacos_version:
-        description: 'Nacos version tag (e.g., v3.2.4)'
-        required: true
-        default: 'v3.2.4'
+echo "开始下载 Dify 及其依赖镜像 (linux/amd64)..."
 
-jobs:
-  download-nacos-amd64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+# ==============================
+# 1. Dify 核心服务
+# ==============================
+docker pull --platform linux/amd64 langgenius/dify-api:1.12.1
+docker pull --platform linux/amd64 langgenius/dify-web:1.12.1-node24-22-1
+docker pull --platform linux/amd64 langgenius/dify-sandbox:0.2.12
+docker pull --platform linux/amd64 langgenius/dify-plugin-daemon:0.5.3-local
 
-      - name: Pull Official Nacos (linux/amd64)
-        run: |
-          VERSION=${{ github.event.inputs.nacos_version }}
-          echo "Pulling nacos/nacos-server:${VERSION} ..."
-          docker pull --platform linux/amd64 nacos/nacos-server:${VERSION}
+# ==============================
+# 2. 数据库与缓存
+# ==============================
+docker pull --platform linux/amd64 postgres:15.19-alpine
+docker pull --platform linux/amd64 redis:6.2.24-alpine
 
-          ARCH=$(docker inspect --format='{{.Architecture}}' nacos/nacos-server:${VERSION})
-          echo "Pulled architecture: ${ARCH}"
-          if [ "${ARCH}" != "amd64" ]; then
-            echo "::error::Expected amd64 but got ${ARCH}"
-            exit 1
-          fi
+# ==============================
+# 3. 网关、代理与向量数据库
+# ==============================
+docker pull --platform linux/amd64 nginx:latest
+docker pull --platform linux/amd64 ubuntu/squid:latest
+docker pull --platform linux/amd64 semitechnologies/weaviate:1.27.0
 
-      - name: Slim Image Locally
-        run: |
-          VERSION=${{ github.event.inputs.nacos_version }}
-          IMAGE="nacos/nacos-server:${VERSION}"
-          
-          # ✅ 关键修复：注入 NACOS_AUTH_TOKEN 绕过 v3.x 启动校验
-          # 使用 /bin/sh -c 确保命令正确执行，而非触发 entrypoint
-          CONTAINER_ID=$(docker create \
-            -e NACOS_AUTH_TOKEN=U2VjcmV0S2V5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI= \
-            --entrypoint /bin/sh \
-            "${IMAGE}" \
-            -c "rm -rf /home/nacos/conf/*.example \
-                   /home/nacos/plugins/custom \
-                   /home/nacos/logs/* \
-                   /home/nacos/target/nacos-server.jar.original \
-                   /home/nacos/bin/*.cmd \
-                   /home/nacos/NOTICE /home/nacos/LICENSE /home/nacos/README.md")
-          
-          docker start "${CONTAINER_ID}"
-          docker wait "${CONTAINER_ID}" || true
-          docker commit "${CONTAINER_ID}" nacos-slim:${VERSION}-amd64
-          docker rm "${CONTAINER_ID}"
-          
-          echo "Slim image created: nacos-slim:${VERSION}-amd64"
-          docker images nacos-slim:${VERSION}-amd64
-
-      - name: Save & Compress Slim Image
-        run: |
-          VERSION=${{ github.event.inputs.nacos_version }}
-          docker save nacos-slim:${VERSION}-amd64 | gzip > nacos-${VERSION}-slim-amd64.tar.gz
-          ls -lh nacos-${VERSION}-slim-amd64.tar.gz
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nacos-${{ github.event.inputs.nacos_version }}-slim-amd64-tar-gz
-          path: nacos-${{ github.event.inputs.nacos_version }}-slim-amd64.tar.gz
-          retention-days: 7
+echo "✅ 所有镜像下载完成！"
