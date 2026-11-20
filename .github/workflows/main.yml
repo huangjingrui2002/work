@@ -1,26 +1,25 @@
-#!/bin/bash
+name: Pull Dify Images
 
-echo "开始下载 Dify 及其依赖镜像 (linux/amd64)..."
+on:
+  workflow_dispatch: # 允许你在网页端手动点击按钮运行
 
-# ==============================
-# 1. Dify 核心服务
-# ==============================
-docker pull --platform linux/amd64 langgenius/dify-api:1.12.1
-docker pull --platform linux/amd64 langgenius/dify-web:1.12.1-node24-22-1
-docker pull --platform linux/amd64 langgenius/dify-sandbox:0.2.12
-docker pull --platform linux/amd64 langgenius/dify-plugin-daemon:0.5.3-local
+jobs:
+  pull-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pulling Docker Images
+        run: |
+          # 1. Dify 核心服务
+          docker pull --platform linux/amd64 langgenius/dify-api:1.12.1
+          docker pull --platform linux/amd64 langgenius/dify-web:1.12.1-node24-22-1
+          docker pull --platform linux/amd64 langgenius/dify-sandbox:0.2.12
+          docker pull --platform linux/amd64 langgenius/dify-plugin-daemon:0.5.3-local
 
-# ==============================
-# 2. 数据库与缓存
-# ==============================
-docker pull --platform linux/amd64 postgres:15.19-alpine
-docker pull --platform linux/amd64 redis:6.2.24-alpine
+          # 2. 数据库与缓存
+          docker pull --platform linux/amd64 postgres:15.19-alpine
+          docker pull --platform linux/amd64 redis:6.2.24-alpine
 
-# ==============================
-# 3. 网关、代理与向量数据库
-# ==============================
-docker pull --platform linux/amd64 nginx:latest
-docker pull --platform linux/amd64 ubuntu/squid:latest
-docker pull --platform linux/amd64 semitechnologies/weaviate:1.27.0
-
-echo "✅ 所有镜像下载完成！"
+          # 3. 网关、代理与向量数据库
+          docker pull --platform linux/amd64 nginx:latest
+          docker pull --platform linux/amd64 ubuntu/squid:latest
+          docker pull --platform linux/amd64 semitechnologies/weaviate:1.27.0
