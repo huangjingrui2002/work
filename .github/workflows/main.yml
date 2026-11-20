@@ -1,13 +1,16 @@
-name: Pull Dify Images
+name: Download Dify Images
 
 on:
-  workflow_dispatch: # 允许你在网页端手动点击按钮运行
+  workflow_dispatch: # 允许手动点击按钮触发
 
 jobs:
-  pull-images:
+  build-and-upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Pulling Docker Images
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Pull All Dify Images
         run: |
           # 1. Dify 核心服务
           docker pull --platform linux/amd64 langgenius/dify-api:1.12.1
@@ -22,3 +25,27 @@ jobs:
           docker pull --platform linux/amd64 nginx:latest
           docker pull --platform linux/amd64 ubuntu/squid:latest
           docker pull --platform linux/amd64 semitechnologies/weaviate:1.27.0
+
+      - name: Save and Compress Images
+        run: |
+          echo "开始打包镜像，这可能需要几分钟..."
+          # 将所有镜像打包并直接压缩成 .tar.gz 文件
+          docker save \
+            langgenius/dify-api:1.12.1 \
+            langgenius/dify-web:1.12.1 \
+            langgenius/dify-sandbox:0.2.12 \
+            langgenius/dify-plugin-daemon:0.5.3-local \
+            postgres:15.19-alpine \
+            redis:6.2.24-alpine \
+            nginx:latest \
+            ubuntu/squid:latest \
+            semitechnologies/weaviate:1.27.0 | gzip > dify-all-images-amd64.tar.gz
+          
+          ls -lh dify-all-images-amd64.tar.gz
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dify-all-images-amd64
+          path: dify-all-images-amd64.tar.gz
+          retention-days: 7
